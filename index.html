@@ -9,7 +9,7 @@
 <body>
 <div class="app">
 
-  <!-- ── Header ── -->
+  <!-- ── Header + Tabs ── -->
   <header class="app-header">
     <h1 class="logo">Hangman</h1>
     <nav class="tab-bar">
@@ -19,11 +19,20 @@
     </nav>
   </header>
 
-  <!-- ── Tab: Game ── -->
+  <!-- ══════════════ Tab: Game ══════════════ -->
   <div id="tab-game" class="tab-panel active">
 
-    <!-- Setup -->
-    <div id="setup-screen" class="screen active">
+    <!-- Home -->
+    <div id="home-screen" class="screen active">
+      <div class="card home-card">
+        <p class="home-tagline">A word-guessing game for friends</p>
+        <button id="solo-btn"       class="btn primary full mode-btn">🎮 Solo Play</button>
+        <button id="mp-btn"         class="btn ghost   full mode-btn">👥 Play with Friends</button>
+      </div>
+    </div>
+
+    <!-- ─── Solo path ─── -->
+    <div id="setup-screen" class="screen">
       <div class="card">
         <h2>Player 1 — Set the Word</h2>
         <p class="sub">Type a word for Player 2 to guess. It stays hidden.</p>
@@ -36,11 +45,11 @@
           <input type="text" id="hint-input" placeholder="Give Player 2 a clue…" autocomplete="off" />
         </div>
         <p id="setup-error" class="error-msg"></p>
-        <button id="start-btn" class="btn primary full">Start Game →</button>
+        <button id="start-btn"    class="btn primary full">Start Game →</button>
+        <button id="back-to-home" class="btn ghost   full">← Back</button>
       </div>
     </div>
 
-    <!-- Handoff -->
     <div id="handoff-screen" class="screen">
       <div class="handoff-card">
         <div class="handoff-icon">🙈</div>
@@ -50,7 +59,6 @@
       </div>
     </div>
 
-    <!-- Game -->
     <div id="game-screen" class="screen">
       <div class="game-layout">
         <div class="gallows-col">
@@ -66,7 +74,6 @@
       </div>
     </div>
 
-    <!-- Result -->
     <div id="result-screen" class="screen">
       <div class="card result-card">
         <div id="result-banner" class="result-banner"></div>
@@ -77,28 +84,142 @@
         </div>
         <div class="result-actions">
           <button id="play-again-btn" class="btn primary">Play Again</button>
-          <button id="see-vocab-btn" class="btn ghost">See Vocabulary</button>
+          <button id="see-vocab-btn"  class="btn ghost">See Vocabulary</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ─── Multiplayer path ─── -->
+
+    <!-- Lobby: enter name + create/join -->
+    <div id="mp-lobby-screen" class="screen">
+      <div class="card">
+        <h2>Play with Friends</h2>
+        <div class="field">
+          <label for="mp-name">Your Name</label>
+          <input type="text" id="mp-name" placeholder="Enter your name…" maxlength="20" autocomplete="off" />
+        </div>
+        <p id="mp-lobby-error" class="error-msg"></p>
+        <button id="create-room-btn" class="btn primary full">Create Room</button>
+        <div class="or-divider"><span>or join with a code</span></div>
+        <div class="field">
+          <label for="room-code-input">Room Code</label>
+          <input type="text" id="room-code-input" placeholder="XXXXXX" maxlength="6"
+                 autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:4px;font-size:1.2rem" />
+        </div>
+        <button id="join-room-btn" class="btn ghost full">Join Room →</button>
+        <button id="mp-back-btn"   class="btn ghost full" style="margin-top:-.2rem">← Back</button>
+      </div>
+    </div>
+
+    <!-- Waiting room -->
+    <div id="mp-room-screen" class="screen">
+      <div class="card" style="max-width:480px">
+        <div class="room-code-box">
+          <p class="rc-label">Room Code</p>
+          <p class="rc-value" id="rc-display"></p>
+          <p class="rc-hint">Share this with friends to join</p>
+        </div>
+        <div id="mp-players-list" class="players-list"></div>
+        <p id="mp-room-status" class="sub" style="text-align:center"></p>
+        <button id="start-round-btn" class="btn primary full" style="display:none">Start Round →</button>
+      </div>
+    </div>
+
+    <!-- Word entry (multiplayer) -->
+    <div id="mp-entry-screen" class="screen">
+      <div class="card">
+        <div class="mp-round-badge">Round <span id="mp-round-num">1</span></div>
+        <h2>Your Secret Word</h2>
+        <p class="sub">Other players will try to guess it. You won't be able to guess this one.</p>
+        <div class="field">
+          <label for="mp-word-input">Secret Word</label>
+          <input type="password" id="mp-word-input" placeholder="Enter a word…" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label for="mp-hint-input">Hint <span class="optional">(optional)</span></label>
+          <input type="text" id="mp-hint-input" placeholder="Give a clue…" autocomplete="off" />
+        </div>
+        <p id="mp-entry-error" class="error-msg"></p>
+        <button id="mp-submit-word-btn" class="btn primary full">Submit Word →</button>
+      </div>
+    </div>
+
+    <!-- Waiting for others to submit -->
+    <div id="mp-wait-screen" class="screen">
+      <div class="handoff-card">
+        <div class="handoff-icon">✅</div>
+        <h2>Word submitted!</h2>
+        <p id="mp-wait-msg">Waiting for other players…</p>
+        <div class="submit-progress">
+          <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+          <p id="progress-label" class="sub" style="text-align:center"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guessing (multiplayer) -->
+    <div id="mp-guess-screen" class="screen">
+      <div class="mp-meta-bar">
+        <span id="mp-meta-word">Word 1 of 3</span>
+        <span id="mp-meta-setter">Word by <strong id="mp-setter-name-display"></strong></span>
+        <span id="mp-meta-round">Round <span id="mp-round-display">1</span></span>
+      </div>
+      <div class="game-layout">
+        <div class="gallows-col">
+          <canvas id="mp-hangman-canvas" width="200" height="250"></canvas>
+          <p class="wrong-label">Wrong: <span id="mp-wrong-count">0</span> / 6</p>
+        </div>
+        <div class="guess-col">
+          <div id="mp-word-display" class="word-display"></div>
+          <p id="mp-hint-display" class="hint-text"></p>
+          <p id="mp-turn-indicator" class="turn-indicator"></p>
+          <div id="mp-keyboard" class="keyboard"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Round summary -->
+    <div id="mp-summary-screen" class="screen">
+      <div class="card summary-card">
+        <h2>Round <span id="summary-round">1</span> — Scoreboard</h2>
+        <div id="summary-table" class="summary-table"></div>
+        <p id="summary-host-note" class="sub" style="text-align:center;display:none">You are the host.</p>
+        <div id="summary-actions" class="result-actions" style="display:none">
+          <button id="next-round-btn" class="btn primary">Next Round →</button>
+          <button id="end-room-btn"   class="btn ghost">End Game</button>
+        </div>
+        <p id="summary-wait-msg" class="sub" style="text-align:center;display:none">Waiting for host…</p>
+      </div>
+    </div>
+
+    <!-- Final results -->
+    <div id="mp-final-screen" class="screen">
+      <div class="card summary-card">
+        <div class="final-trophy">🏆</div>
+        <h2>Game Over!</h2>
+        <div id="final-table" class="summary-table"></div>
+        <button id="final-home-btn" class="btn primary" style="margin-top:.5rem">Back to Home</button>
       </div>
     </div>
 
   </div><!-- /tab-game -->
 
-  <!-- ── Tab: History ── -->
+  <!-- ══════════════ Tab: History ══════════════ -->
   <div id="tab-history" class="tab-panel">
     <div class="tab-content">
       <div id="history-list" class="item-list">
-        <p class="empty-state">No games played yet.<br/><span>Finish a game to see it here.</span></p>
+        <p class="empty-state">No games played yet.<br/><span>Finish a solo game to see it here.</span></p>
       </div>
     </div>
   </div>
 
-  <!-- ── Tab: Vocabulary ── -->
+  <!-- ══════════════ Tab: Vocabulary ══════════════ -->
   <div id="tab-vocabulary" class="tab-panel">
     <div class="tab-content">
       <p class="vocab-count"><span id="vocab-count">0</span> words in your dictionary</p>
       <div id="vocabulary-list" class="item-list">
-        <p class="empty-state">Your vocabulary is empty.<br/><span>Words you guess will appear here with their definitions.</span></p>
+        <p class="empty-state">Your vocabulary is empty.<br/><span>Words you guess will appear here with definitions.</span></p>
       </div>
     </div>
   </div>
