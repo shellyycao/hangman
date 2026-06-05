@@ -34,8 +34,12 @@ function _draw(n, won = false) {
   if (n === 0) { if (won) _drawWinFg(); return; }
 
   const dead = n >= 6;
+
+  // Behind-body layers (drawn before body)
+  if (n >= 21) _drawWings();
   if (n >= 12) _drawCape();
   if (n >= 7)  _drawPartyHat();
+  if (n >= 24) _drawCrown();
 
   if (n >= 1) {
     dc.fillStyle   = dead ? '#c0bedd' : '#ffcba4';
@@ -60,16 +64,42 @@ function _draw(n, won = false) {
     }
   }
 
+  // Face accessories (over head)
   if (n >= 8)  _drawSunglasses();
+  if (n >= 13) _drawMustache();
+  if (n >= 14) _drawMonocle();
+  if (n >= 22) _drawHalo();
+
+  // Body
   dc.strokeStyle = '#fffffe'; dc.lineWidth = 3;
   if (n >= 2) line(140,90,140,160);
   if (n >= 3) line(140,110,110,145);
   if (n >= 4) line(140,110,170,145);
   if (n >= 5) line(140,160,110,200);
   if (n >= 6) line(140,160,170,200);
+
+  // Body accessories
   if (n >= 11) _drawBowTie();
+  if (n >= 17) _drawBelt();
+  if (n >= 18) _drawMedal();
+  if (n >= 19) _drawPocketSquare();
+  if (n >= 25) _drawVest();
+
+  // Wrist accessories
+  if (n >= 15) _drawWristwatch();
+  if (n >= 16) _drawRing();
+
+  // Hand accessories
   if (n >= 9)  _drawBalloon();
   if (n >= 10) _drawIceCream();
+  if (n >= 23) _drawStarWand();
+
+  // Leg/foot accessories
+  if (n >= 20) _drawSocks();
+
+  // Prop beside figure
+  if (n >= 25) _drawWalkingCane();
+
   if (won) _drawWinFg();
 }
 
@@ -132,6 +162,184 @@ function _drawCape() {
   dc.bezierCurveTo(115,220,162,222,185,215); dc.bezierCurveTo(190,178,172,135,155,95);
   dc.closePath(); dc.fill(); dc.stroke();
 }
+// ── 13 new accessory helpers (stages 13-25) ───────────────────────────────
+function _drawMustache() {
+  dc.strokeStyle = '#3d2b1f'; dc.fillStyle = '#3d2b1f'; dc.lineWidth = 1.5;
+  dc.beginPath();
+  dc.moveTo(140,78);
+  dc.bezierCurveTo(135,74,128,76,127,80);
+  dc.bezierCurveTo(130,80,134,78,140,78);
+  dc.bezierCurveTo(146,78,150,80,153,80);
+  dc.bezierCurveTo(152,76,145,74,140,78);
+  dc.fill();
+}
+function _drawMonocle() {
+  // Right eye monocle
+  dc.strokeStyle = '#ffd32a'; dc.lineWidth = 2;
+  dc.beginPath(); dc.arc(147,65,8,0,Math.PI*2); dc.stroke();
+  // Chain from monocle to ear
+  dc.strokeStyle = '#ffd32a'; dc.lineWidth = 1;
+  dc.beginPath(); dc.moveTo(155,70); dc.bezierCurveTo(162,75,164,70,162,68); dc.stroke();
+  // Tiny screw at corner
+  dc.fillStyle = '#ffd32a';
+  dc.beginPath(); dc.arc(155,70,2,0,Math.PI*2); dc.fill();
+}
+function _drawWristwatch() {
+  // On left wrist (midpoint of left arm ≈ 125,127)
+  dc.fillStyle = '#1a1a2e'; dc.strokeStyle = '#ffd32a'; dc.lineWidth = 1.5;
+  dc.fillRect(119,122,12,8); dc.strokeRect(119,122,12,8);
+  // Watch face
+  dc.fillStyle = '#fffffe'; dc.beginPath(); dc.arc(125,126,4,0,Math.PI*2); dc.fill();
+  // Hands
+  dc.strokeStyle = '#ff4757'; dc.lineWidth = 1;
+  line(125,126,127,124); line(125,126,125,123);
+  // Strap lines
+  dc.strokeStyle = '#ffd32a'; dc.lineWidth = 1;
+  line(119,124,115,124); line(131,124,135,124);
+}
+function _drawRing() {
+  // Gold ring on right hand (170,145)
+  dc.strokeStyle = '#ffd32a'; dc.lineWidth = 3;
+  dc.beginPath(); dc.arc(170,148,5,0,Math.PI*2); dc.stroke();
+  // Gem on ring
+  dc.fillStyle = '#a29bfe';
+  dc.beginPath(); dc.arc(170,143,3,0,Math.PI*2); dc.fill();
+  dc.strokeStyle = '#7c6fd4'; dc.lineWidth = 1;
+  dc.beginPath(); dc.arc(170,143,3,0,Math.PI*2); dc.stroke();
+}
+function _drawBelt() {
+  // Belt strap
+  dc.fillStyle = '#5d3a1a'; dc.strokeStyle = '#3d2b1f'; dc.lineWidth = 1;
+  dc.fillRect(128,155,24,6); dc.strokeRect(128,155,24,6);
+  // Belt buckle (center)
+  dc.fillStyle = '#ffd32a'; dc.strokeStyle = '#e6b800'; dc.lineWidth = 1;
+  dc.fillRect(137,154,6,8); dc.strokeRect(137,154,6,8);
+  // Buckle pin
+  dc.strokeStyle = '#3d2b1f'; dc.lineWidth = 1.5;
+  line(140,154,140,162);
+}
+function _drawMedal() {
+  // Ribbon on left chest (≈130,112)
+  dc.fillStyle = '#ff4757';
+  dc.beginPath(); dc.moveTo(128,107); dc.lineTo(133,107); dc.lineTo(133,118); dc.lineTo(130,115); dc.lineTo(128,118); dc.closePath(); dc.fill();
+  // Medal disc
+  dc.fillStyle = '#ffd32a'; dc.strokeStyle = '#e6b800'; dc.lineWidth = 1.5;
+  dc.beginPath(); dc.arc(130,120,6,0,Math.PI*2); dc.fill(); dc.stroke();
+  // Star on medal
+  dc.fillStyle = '#ff9f43';
+  dc.beginPath();
+  for(let i=0;i<10;i++){
+    const a=(i*Math.PI/5)-Math.PI/2, r=i%2===0?4:2;
+    i===0?dc.moveTo(130+Math.cos(a)*r,120+Math.sin(a)*r):dc.lineTo(130+Math.cos(a)*r,120+Math.sin(a)*r);
+  }
+  dc.closePath(); dc.fill();
+}
+function _drawPocketSquare() {
+  // Small handkerchief in right chest pocket (≈150,105)
+  dc.fillStyle = '#fd79a8'; dc.strokeStyle = '#e84393'; dc.lineWidth = 1;
+  dc.beginPath();
+  dc.moveTo(148,102); dc.lineTo(154,102); dc.lineTo(155,108); dc.lineTo(147,108);
+  dc.closePath(); dc.fill(); dc.stroke();
+  // Fold lines
+  dc.strokeStyle = 'rgba(255,255,255,0.4)'; dc.lineWidth = 1;
+  line(149,102,150,105); line(152,102,151,105);
+}
+function _drawSocks() {
+  // Left sock (leg from 140,160 to 110,200)
+  dc.fillStyle = '#ff9f43'; dc.strokeStyle = '#e67e22'; dc.lineWidth = 1;
+  dc.fillRect(105,193,10,10); dc.strokeRect(105,193,10,10);
+  // Sock stripes
+  dc.strokeStyle = '#fff'; dc.lineWidth = 1;
+  line(105,196,115,196); line(105,199,115,199);
+  // Right sock
+  dc.fillStyle = '#ff9f43'; dc.strokeStyle = '#e67e22'; dc.lineWidth = 1;
+  dc.fillRect(165,193,10,10); dc.strokeRect(165,193,10,10);
+  dc.strokeStyle = '#fff'; dc.lineWidth = 1;
+  line(165,196,175,196); line(165,199,175,199);
+}
+function _drawWings() {
+  // Angel wings behind shoulders
+  dc.fillStyle = 'rgba(255,245,200,0.65)'; dc.strokeStyle = '#ffd32a'; dc.lineWidth = 1.5;
+  // Left wing
+  dc.beginPath();
+  dc.moveTo(127,108); dc.bezierCurveTo(100,85,70,95,75,120); dc.bezierCurveTo(88,130,108,128,127,118);
+  dc.closePath(); dc.fill(); dc.stroke();
+  // Right wing
+  dc.beginPath();
+  dc.moveTo(153,108); dc.bezierCurveTo(180,85,210,95,205,120); dc.bezierCurveTo(192,130,172,128,153,118);
+  dc.closePath(); dc.fill(); dc.stroke();
+  // Wing feather lines
+  dc.strokeStyle = 'rgba(255,200,50,0.4)'; dc.lineWidth = 1;
+  dc.beginPath(); dc.moveTo(127,114); dc.bezierCurveTo(105,104,85,108,80,118); dc.stroke();
+  dc.beginPath(); dc.moveTo(153,114); dc.bezierCurveTo(175,104,195,108,200,118); dc.stroke();
+}
+function _drawHalo() {
+  // Golden halo above head
+  dc.strokeStyle = '#ffd32a'; dc.lineWidth = 3;
+  dc.shadowColor = '#ffd32a'; dc.shadowBlur = 8;
+  dc.beginPath(); dc.ellipse(143,44,18,5,0.15,0,Math.PI*2); dc.stroke();
+  dc.shadowBlur = 0;
+  // Inner glow
+  dc.strokeStyle = 'rgba(255,211,42,0.4)'; dc.lineWidth = 6;
+  dc.beginPath(); dc.ellipse(143,44,18,5,0.15,0,Math.PI*2); dc.stroke();
+}
+function _drawStarWand() {
+  // Magic wand held in right hand area
+  dc.strokeStyle = '#a29bfe'; dc.lineWidth = 2;
+  line(170,145,192,120);
+  // Star tip at (192,120)
+  dc.fillStyle = '#ffd32a';
+  dc.beginPath();
+  for(let i=0;i<10;i++){
+    const a=(i*Math.PI/5)-Math.PI/2, r=i%2===0?9:4;
+    i===0?dc.moveTo(192+Math.cos(a)*r,120+Math.sin(a)*r):dc.lineTo(192+Math.cos(a)*r,120+Math.sin(a)*r);
+  }
+  dc.closePath(); dc.fill();
+  // Sparkles
+  dc.fillStyle = '#fd79a8';
+  [[186,110],[198,115],[195,128]].forEach(([x,y])=>{
+    dc.beginPath(); dc.arc(x,y,2.5,0,Math.PI*2); dc.fill();
+  });
+}
+function _drawCrown() {
+  // Crown above party hat (lower z-order than hat so party hat is on top → draw crown AFTER hat)
+  // Actually we want crown visible so draw it after hat in the render order... let's place it very high
+  dc.fillStyle = '#ffd32a'; dc.strokeStyle = '#e6b800'; dc.lineWidth = 1.5;
+  // Crown band at y=13 (above party hat tip)
+  dc.beginPath();
+  dc.moveTo(137,13);
+  dc.lineTo(137,7); dc.lineTo(140,11); dc.lineTo(143,6); dc.lineTo(146,11); dc.lineTo(150,7); dc.lineTo(150,13);
+  dc.closePath(); dc.fill(); dc.stroke();
+  // Gems
+  dc.fillStyle = '#ff4757'; dc.beginPath(); dc.arc(140,11,2,0,Math.PI*2); dc.fill();
+  dc.fillStyle = '#a29bfe'; dc.beginPath(); dc.arc(143,6,1.5,0,Math.PI*2); dc.fill();
+  dc.fillStyle = '#2ed573'; dc.beginPath(); dc.arc(146,10,1.5,0,Math.PI*2); dc.fill();
+}
+function _drawVest() {
+  // Striped vest over body area
+  dc.strokeStyle = '#fd9644'; dc.lineWidth = 1.5;
+  // Left lapel
+  dc.beginPath(); dc.moveTo(140,92); dc.lineTo(133,105); dc.lineTo(131,130); dc.stroke();
+  // Right lapel
+  dc.beginPath(); dc.moveTo(140,92); dc.lineTo(147,105); dc.lineTo(149,130); dc.stroke();
+  // Vest stripes (horizontal)
+  dc.strokeStyle = 'rgba(253,150,68,0.35)'; dc.lineWidth = 1;
+  [105,112,119,126].forEach(y => line(133,y,147,y));
+}
+function _drawWalkingCane() {
+  // Cane beside left leg
+  dc.strokeStyle = '#8B4513'; dc.lineWidth = 3;
+  // Shaft
+  line(104,138,116,218);
+  // Hook handle (curves right)
+  dc.beginPath(); dc.arc(110,138,6,Math.PI,0); dc.stroke();
+  // Rubber tip
+  dc.fillStyle = '#333'; dc.beginPath(); dc.arc(116,218,4,0,Math.PI*2); dc.fill();
+  // Wood grain
+  dc.strokeStyle = 'rgba(139,69,19,0.5)'; dc.lineWidth = 1;
+  line(106,148,114,148); line(107,160,115,160); line(106,172,114,172);
+}
+
 function _drawWinBg() {
   [[15,45,'#ff4757'],[32,95,'#ffd32a'],[183,62,'#2ed573'],
    [170,158,'#74b9ff'],[18,188,'#fd79a8'],[190,200,'#a29bfe'],
@@ -235,7 +443,11 @@ function renderHistory() {
   const list = document.getElementById('history-list');
   const h    = getHistory();
   if (!h.length) { list.innerHTML = '<p class="empty-state">No games played yet.<br/><span>Finish a solo game to see it here.</span></p>'; return; }
-  list.innerHTML = h.map(e => `
+  list.innerHTML = `
+    <div class="history-actions">
+      <button class="btn ghost btn-sm" id="clear-history-btn">Clear All History</button>
+    </div>` +
+    h.map(e => `
     <div class="history-item">
       <div class="item-header">
         <span class="item-word">${e.word}</span>
@@ -244,6 +456,12 @@ function renderHistory() {
       ${e.hint ? `<p class="item-hint">Hint: ${e.hint}</p>` : ''}
       <p class="item-source">${e.date}</p>
     </div>`).join('');
+  document.getElementById('clear-history-btn').addEventListener('click', () => {
+    if (confirm('Remove all history?')) {
+      localStorage.removeItem('hangman-history');
+      renderHistory();
+    }
+  });
 }
 
 function getVocab() {
@@ -372,7 +590,7 @@ function soloGuess(ch) {
   if (soloOver || soloGuessed.has(ch)) return;
   soloGuessed.add(ch);
   if (!soloWord.includes(ch)) soloWrong++;
-  drawHangman(Math.min(soloWrong, 12));
+  drawHangman(Math.min(soloWrong, 25));
   renderWordDisplay('word-display', soloWord, soloGuessed);
   updateKeyboard('keyboard', soloGuessed, soloWord);
   document.getElementById('wrong-count').textContent = soloWrong;
@@ -384,7 +602,7 @@ function soloGuess(ch) {
 
 function endSoloGame() {
   document.querySelectorAll('#keyboard .key-btn').forEach(b => (b.disabled = true));
-  drawHangman(Math.min(soloWrong, 12), true);
+  drawHangman(Math.min(soloWrong, 25), true);
   setTimeout(() => {
     const banner = document.getElementById('result-banner');
     banner.className = 'result-banner win';
