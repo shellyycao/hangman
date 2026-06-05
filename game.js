@@ -1,6 +1,6 @@
 'use strict';
 
-const MAX_WRONG = 6;
+const MAX_WRONG = 12; // 6 body + 6 clothing stages
 
 // ── State ──────────────────────────────────────────────────────────────────
 let secretWord = '';
@@ -26,30 +26,170 @@ function line(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-function drawHangman(n) {
+function drawHangman(n, won = false) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.lineCap = 'round';
 
-  // Gallows
+  // ── Gallows ──
   ctx.strokeStyle = '#ff6b6b';
   ctx.lineWidth   = 4;
-  ctx.lineCap     = 'round';
   line(20, 240, 180, 240);
   line(60, 240, 60,  20);
   line(60,  20, 140, 20);
   line(140, 20, 140, 50);
 
-  if (n === 0) return;
+  if (n === 0) { if (won) drawWinDecorations(); return; }
 
+  const dead = n >= 6;
+
+  // ── Stage 7+: hat (drawn behind head) ──
+  if (n >= 7) drawHat();
+
+  // ── Head ──
+  if (n >= 1) {
+    ctx.strokeStyle = '#fffffe';
+    ctx.lineWidth   = 3;
+    ctx.beginPath();
+    ctx.arc(140, 70, 20, 0, Math.PI * 2);
+    ctx.stroke();
+
+    if (dead) {
+      // XX eyes
+      ctx.strokeStyle = '#ff6b6b';
+      ctx.lineWidth = 2;
+      line(129, 61, 137, 69); line(137, 61, 129, 69); // left X
+      line(143, 61, 151, 69); line(151, 61, 143, 69); // right X
+      // Wavy dead mouth
+      ctx.strokeStyle = '#fffffe';
+      ctx.beginPath();
+      ctx.moveTo(132, 79); ctx.lineTo(136, 76); ctx.lineTo(140, 79);
+      ctx.lineTo(144, 76); ctx.lineTo(148, 79);
+      ctx.stroke();
+    } else {
+      // Normal worried eyes + mouth
+      ctx.fillStyle = '#fffffe';
+      ctx.beginPath(); ctx.arc(133, 65, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(147, 65, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fffffe';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(140, 74, 5, 0.3, Math.PI - 0.3);
+      ctx.stroke();
+    }
+  }
+
+  // ── Body ──
   ctx.strokeStyle = '#fffffe';
-  ctx.fillStyle   = '#fffffe';
   ctx.lineWidth   = 3;
-
-  if (n >= 1) { ctx.beginPath(); ctx.arc(140, 70, 20, 0, Math.PI * 2); ctx.stroke(); }
   if (n >= 2) line(140, 90, 140, 160);
   if (n >= 3) line(140, 110, 110, 145);
   if (n >= 4) line(140, 110, 170, 145);
   if (n >= 5) line(140, 160, 110, 200);
   if (n >= 6) line(140, 160, 170, 200);
+
+  // ── Clothing stages ──
+  if (n >= 8)  drawShirt();
+  if (n >= 9)  drawPants();
+  if (n >= 10) drawShoes();
+  if (n >= 11) drawTie();
+  if (n >= 12) drawScarf();
+
+  if (won) drawWinDecorations();
+}
+
+// ── Clothing helpers ───────────────────────────────────────────────────────
+function drawHat() {
+  ctx.fillStyle   = '#1a1a2e';
+  ctx.strokeStyle = '#fffffe';
+  ctx.lineWidth   = 2;
+  ctx.fillRect(126, 49, 28, 4);  ctx.strokeRect(126, 49, 28, 4);  // brim
+  ctx.fillRect(131, 36, 18, 14); ctx.strokeRect(131, 36, 18, 14); // crown
+}
+
+function drawShirt() {
+  ctx.strokeStyle = '#74c0fc';
+  ctx.lineWidth   = 2;
+  // collar V
+  ctx.beginPath();
+  ctx.moveTo(136, 92); ctx.lineTo(140, 100); ctx.lineTo(144, 92);
+  ctx.stroke();
+  // buttons
+  ctx.fillStyle = '#74c0fc';
+  [110, 122, 134, 146].forEach(y => {
+    ctx.beginPath(); ctx.arc(140, y, 2, 0, Math.PI * 2); ctx.fill();
+  });
+}
+
+function drawPants() {
+  ctx.strokeStyle = '#4dabf7';
+  ctx.lineWidth   = 2;
+  ctx.strokeRect(131, 158, 18, 5); // belt
+  // pant inner seams
+  line(132, 163, 120, 197);
+  line(148, 163, 160, 197);
+}
+
+function drawShoes() {
+  ctx.fillStyle   = '#868e96';
+  ctx.strokeStyle = '#868e96';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.ellipse(107, 204, 11, 5, -0.25, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(173, 204, 11, 5,  0.25, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawTie() {
+  ctx.fillStyle = '#f03e3e';
+  ctx.beginPath();
+  ctx.moveTo(138, 101); ctx.lineTo(134, 112);
+  ctx.lineTo(140, 152); ctx.lineTo(146, 112);
+  ctx.lineTo(142, 101);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawScarf() {
+  ctx.strokeStyle = '#ff922b';
+  ctx.lineWidth   = 5;
+  ctx.beginPath();
+  ctx.arc(140, 92, 14, Math.PI + 0.4, -0.4);
+  ctx.stroke();
+  line(126, 97, 116, 120);
+}
+
+// ── Win decorations ────────────────────────────────────────────────────────
+function drawWinDecorations() {
+  // Flowers along the base
+  [[32, 233, '#ff6b6b'], [100, 233, '#69db7c'], [168, 233, '#ffd43b']].forEach(([x, y, c]) => drawFlower(x, y, c));
+
+  // Banner text on beam
+  ctx.fillStyle = '#ffd43b';
+  ctx.font      = 'bold 8px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎉 YOU WIN!', 98, 16);
+
+  // Birds perched on pole
+  drawBird(48, 14);
+  drawBird(68, 10);
+}
+
+function drawFlower(cx, cy, color) {
+  ctx.fillStyle = color;
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(a) * 5, cy + Math.sin(a) * 5, 4, 2.5, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#ffd43b';
+  ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawBird(x, y) {
+  ctx.strokeStyle = '#fffffe';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath();
+  ctx.arc(x - 4, y, 4, Math.PI, 0);
+  ctx.arc(x + 4, y, 4, Math.PI, 0);
+  ctx.stroke();
 }
 
 // ── Word display ───────────────────────────────────────────────────────────
@@ -109,6 +249,14 @@ function handleGuess(ch) {
     gameOver = true;
     endGame(false);
   }
+
+  // After 6 wrong: show "dead" notice in the wrong label
+  const label = document.querySelector('.wrong-label');
+  if (wrongCount >= 6 && !allRevealed && wrongCount < MAX_WRONG) {
+    label.innerHTML = `Wrong: <span id="wrong-count">${wrongCount}</span> / 12 &nbsp;<span style="color:#ff6b6b;font-size:0.75rem">💀 still going…</span>`;
+  } else {
+    document.getElementById('wrong-count').textContent = wrongCount;
+  }
 }
 
 // ── End game ───────────────────────────────────────────────────────────────
@@ -116,15 +264,21 @@ function endGame(won) {
   renderWord(!won);
   document.querySelectorAll('.key-btn').forEach(b => (b.disabled = true));
 
-  const banner = document.getElementById('result-banner');
-  banner.className = 'result-banner ' + (won ? 'win' : 'lose');
-  banner.textContent = won ? 'You got it!' : 'Game over!';
+  // Redraw with win decorations if player won
+  drawHangman(wrongCount, won);
 
-  document.getElementById('result-word').textContent = secretWord.toUpperCase();
+  // Brief pause so the player sees the canvas update before screen switches
+  setTimeout(() => {
+    const banner = document.getElementById('result-banner');
+    banner.className = 'result-banner ' + (won ? 'win' : 'lose');
+    banner.textContent = won ? 'You got it! 🎉' : 'Game over!';
 
-  saveHistory(secretWord, hint, won);
-  showScreen('result-screen');
-  fetchDefinition(secretWord);
+    document.getElementById('result-word').textContent = secretWord.toUpperCase();
+
+    saveHistory(secretWord, hint, won);
+    showScreen('result-screen');
+    fetchDefinition(secretWord);
+  }, 800);
 }
 
 // ── Dictionary / Wikipedia lookup ─────────────────────────────────────────
