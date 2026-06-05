@@ -1,81 +1,23 @@
-const WORDS = [
-  { word: "javascript", hint: "A popular programming language for the web" },
-  { word: "hangman", hint: "The game you are playing right now" },
-  { word: "elephant", hint: "The largest land animal" },
-  { word: "astronaut", hint: "Someone who travels to space" },
-  { word: "pizza", hint: "A beloved Italian dish with toppings" },
-  { word: "keyboard", hint: "You type on this" },
-  { word: "ocean", hint: "A vast body of salt water" },
-  { word: "volcano", hint: "A mountain that can erupt with lava" },
-  { word: "library", hint: "A place full of books to borrow" },
-  { word: "thunder", hint: "The loud sound during a storm" },
-  { word: "penguin", hint: "A flightless bird from Antarctica" },
-  { word: "pyramid", hint: "An ancient Egyptian structure" },
-  { word: "diamond", hint: "The hardest natural material" },
-  { word: "guitar", hint: "A stringed musical instrument" },
-  { word: "butterfly", hint: "An insect with colorful wings" },
-  { word: "compass", hint: "A tool for finding direction" },
-  { word: "dolphin", hint: "An intelligent marine mammal" },
-  { word: "lantern", hint: "A portable light source" },
-  { word: "cactus", hint: "A desert plant that stores water" },
-  { word: "microscope", hint: "Used to see very tiny things" },
-];
+'use strict';
 
 const MAX_WRONG = 6;
 
-let word = "";
-let hint = "";
-let guessed = new Set();
+// ── State ──────────────────────────────────────────────────────────────────
+let secretWord = '';
+let hint       = '';
+let guessed    = new Set();
 let wrongCount = 0;
-let gameOver = false;
+let gameOver   = false;
 
-const canvas = document.getElementById("hangman-canvas");
-const ctx = canvas.getContext("2d");
-
-function drawGallows() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "#e94560";
-  ctx.lineWidth = 4;
-  ctx.lineCap = "round";
-
-  // Base
-  line(20, 240, 180, 240);
-  // Pole
-  line(60, 240, 60, 20);
-  // Top beam
-  line(60, 20, 140, 20);
-  // Rope
-  line(140, 20, 140, 50);
+// ── Screen helpers ─────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function drawPart(n) {
-  ctx.strokeStyle = "#eee";
-  ctx.lineWidth = 3;
-  ctx.fillStyle = "#eee";
-
-  switch (n) {
-    case 1: // Head
-      ctx.beginPath();
-      ctx.arc(140, 70, 20, 0, Math.PI * 2);
-      ctx.stroke();
-      break;
-    case 2: // Body
-      line(140, 90, 140, 160);
-      break;
-    case 3: // Left arm
-      line(140, 110, 110, 145);
-      break;
-    case 4: // Right arm
-      line(140, 110, 170, 145);
-      break;
-    case 5: // Left leg
-      line(140, 160, 110, 200);
-      break;
-    case 6: // Right leg
-      line(140, 160, 170, 200);
-      break;
-  }
-}
+// ── Canvas ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('hangman-canvas');
+const ctx    = canvas.getContext('2d');
 
 function line(x1, y1, x2, y2) {
   ctx.beginPath();
@@ -84,120 +26,245 @@ function line(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-function renderCanvas() {
-  drawGallows();
-  for (let i = 1; i <= wrongCount; i++) drawPart(i);
+function drawHangman(n) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Gallows
+  ctx.strokeStyle = '#ff6b6b';
+  ctx.lineWidth   = 4;
+  ctx.lineCap     = 'round';
+  line(20, 240, 180, 240);
+  line(60, 240, 60,  20);
+  line(60,  20, 140, 20);
+  line(140, 20, 140, 50);
+
+  if (n === 0) return;
+
+  ctx.strokeStyle = '#fffffe';
+  ctx.fillStyle   = '#fffffe';
+  ctx.lineWidth   = 3;
+
+  if (n >= 1) { ctx.beginPath(); ctx.arc(140, 70, 20, 0, Math.PI * 2); ctx.stroke(); }
+  if (n >= 2) line(140, 90, 140, 160);
+  if (n >= 3) line(140, 110, 110, 145);
+  if (n >= 4) line(140, 110, 170, 145);
+  if (n >= 5) line(140, 160, 110, 200);
+  if (n >= 6) line(140, 160, 170, 200);
 }
 
-function renderWord() {
-  const display = document.getElementById("word-display");
-  display.innerHTML = word
-    .split("")
-    .map((ch) => {
-      if (ch === " ") return `<div class="letter-box space"></div>`;
-      const revealed = guessed.has(ch) ? ch : "";
-      return `<div class="letter-box">${revealed}</div>`;
+// ── Word display ───────────────────────────────────────────────────────────
+function renderWord(reveal = false) {
+  document.getElementById('word-display').innerHTML = secretWord
+    .split('')
+    .map(ch => {
+      if (ch === ' ') return '<div class="letter-box space"></div>';
+      if (guessed.has(ch)) return `<div class="letter-box">${ch}</div>`;
+      if (reveal)          return `<div class="letter-box reveal-miss">${ch}</div>`;
+      return '<div class="letter-box"></div>';
     })
-    .join("");
+    .join('');
 }
 
-function renderKeyboard() {
-  const kb = document.getElementById("keyboard");
-  kb.innerHTML = "";
+// ── Keyboard ───────────────────────────────────────────────────────────────
+function buildKeyboard() {
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = '';
   for (let i = 97; i <= 122; i++) {
-    const ch = String.fromCharCode(i);
-    const btn = document.createElement("button");
-    btn.textContent = ch;
-    btn.className = "key-btn";
+    const ch  = String.fromCharCode(i);
+    const btn = document.createElement('button');
+    btn.className     = 'key-btn';
+    btn.textContent   = ch;
     btn.dataset.letter = ch;
-    if (guessed.has(ch)) {
-      btn.disabled = true;
-      btn.classList.add(word.includes(ch) ? "correct" : "wrong");
-    }
-    btn.addEventListener("click", () => guess(ch));
+    btn.addEventListener('click', () => handleGuess(ch));
     kb.appendChild(btn);
   }
 }
 
-function renderUsed() {
-  const sorted = [...guessed].sort();
-  document.getElementById("used-letters").textContent = sorted.join("  ") || "—";
+function updateKeyboard() {
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    const ch = btn.dataset.letter;
+    if (guessed.has(ch)) {
+      btn.disabled = true;
+      btn.classList.add(secretWord.includes(ch) ? 'correct' : 'wrong');
+    }
+  });
 }
 
-function setMessage(text, win = false) {
-  const el = document.getElementById("message");
-  el.textContent = text;
-  el.className = "message" + (win ? " win" : "");
-}
-
-function checkWin() {
-  return word.split("").every((ch) => ch === " " || guessed.has(ch));
-}
-
-function guess(ch) {
+// ── Guess logic ────────────────────────────────────────────────────────────
+function handleGuess(ch) {
   if (gameOver || guessed.has(ch)) return;
   guessed.add(ch);
+  if (!secretWord.includes(ch)) wrongCount++;
 
-  if (!word.includes(ch)) {
-    wrongCount++;
-  }
-
-  renderCanvas();
+  document.getElementById('wrong-count').textContent = wrongCount;
+  drawHangman(wrongCount);
   renderWord();
-  renderKeyboard();
-  renderUsed();
-  document.getElementById("wrong-count").textContent = wrongCount;
+  updateKeyboard();
 
-  if (checkWin()) {
+  const allRevealed = secretWord.split('').every(c => c === ' ' || guessed.has(c));
+  if (allRevealed) {
     gameOver = true;
-    setMessage("You won! 🎉", true);
-    disableKeyboard();
+    endGame(true);
   } else if (wrongCount >= MAX_WRONG) {
     gameOver = true;
-    setMessage(`Game over! The word was: ${word.toUpperCase()}`);
-    revealWord();
-    disableKeyboard();
+    endGame(false);
   }
 }
 
-function disableKeyboard() {
-  document.querySelectorAll(".key-btn").forEach((b) => (b.disabled = true));
+// ── End game ───────────────────────────────────────────────────────────────
+function endGame(won) {
+  renderWord(!won);
+  document.querySelectorAll('.key-btn').forEach(b => (b.disabled = true));
+
+  const banner = document.getElementById('result-banner');
+  banner.className = 'result-banner ' + (won ? 'win' : 'lose');
+  banner.textContent = won ? 'You got it!' : 'Game over!';
+
+  document.getElementById('result-word').textContent = secretWord.toUpperCase();
+
+  saveHistory(secretWord, hint, won);
+  showScreen('result-screen');
+  fetchDefinition(secretWord);
 }
 
-function revealWord() {
-  const display = document.getElementById("word-display");
-  display.innerHTML = word
-    .split("")
-    .map((ch) => {
-      if (ch === " ") return `<div class="letter-box space"></div>`;
-      const missed = !guessed.has(ch);
-      return `<div class="letter-box" style="${missed ? "color:#e94560" : ""}">${ch}</div>`;
-    })
-    .join("");
+// ── Dictionary / Wikipedia lookup ─────────────────────────────────────────
+async function fetchDefinition(word) {
+  const box = document.getElementById('definition-box');
+
+  // 1. Try Free Dictionary API
+  try {
+    const res  = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    if (res.ok) {
+      const data  = await res.json();
+      const entry = data[0];
+      const html  = entry.meanings.slice(0, 3).map(m => {
+        const def = m.definitions[0].definition;
+        return `<div class="meaning"><span class="pos-tag">${m.partOfSpeech}</span>${def}</div>`;
+      }).join('');
+      box.innerHTML = html + `<p class="def-source">Source: <a href="https://dictionaryapi.dev" target="_blank">Free Dictionary API</a></p>`;
+      return;
+    }
+  } catch (_) {}
+
+  // 2. Fallback: Wikipedia summary
+  try {
+    const res  = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.extract) {
+        const pageUrl = data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(word)}`;
+        box.innerHTML = `<div class="meaning">${data.extract}</div>
+          <p class="def-source">Source: <a href="${pageUrl}" target="_blank">Wikipedia</a></p>`;
+        return;
+      }
+    }
+  } catch (_) {}
+
+  box.innerHTML = '<div class="meaning" style="color:#3d3d5c;font-style:italic;">No definition found for this word.</div>';
 }
 
+// ── History (localStorage) ─────────────────────────────────────────────────
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('hangman-history') || '[]'); }
+  catch (_) { return []; }
+}
+
+function saveHistory(word, wordHint, won) {
+  const entry   = { word, hint: wordHint, won, date: new Date().toLocaleDateString(), def: '' };
+  const history = getHistory();
+  // Avoid duplicate consecutive entries for the same word
+  if (history.length && history[0].word === word) return;
+  history.unshift(entry);
+  localStorage.setItem('hangman-history', JSON.stringify(history.slice(0, 100)));
+}
+
+function renderHistory() {
+  const list    = document.getElementById('history-list');
+  const history = getHistory();
+
+  if (!history.length) {
+    list.innerHTML = '<p class="no-history">No games played yet.</p>';
+    return;
+  }
+
+  list.innerHTML = history.map(e => `
+    <div class="history-item">
+      <div class="history-item-header">
+        <span class="history-word">${e.word}</span>
+        <span class="history-badge ${e.won ? 'win' : 'lose'}">${e.won ? 'Won' : 'Lost'}</span>
+      </div>
+      ${e.hint ? `<p class="history-def" style="color:#a7a9be;margin-bottom:4px">Hint: ${e.hint}</p>` : ''}
+      <p class="history-def">${e.defText || 'No definition cached.'}</p>
+      <p class="history-date">${e.date}</p>
+    </div>`).join('');
+}
+
+function openHistory() {
+  renderHistory();
+  document.getElementById('history-modal').classList.remove('hidden');
+}
+
+function closeHistory() {
+  document.getElementById('history-modal').classList.add('hidden');
+}
+
+// ── Game start ─────────────────────────────────────────────────────────────
 function startGame() {
-  const entry = WORDS[Math.floor(Math.random() * WORDS.length)];
-  word = entry.word;
-  hint = entry.hint;
-  guessed = new Set();
-  wrongCount = 0;
-  gameOver = false;
+  const wordInput = document.getElementById('word-input');
+  const hintInput = document.getElementById('hint-input');
+  const errEl     = document.getElementById('setup-error');
 
-  document.getElementById("wrong-count").textContent = 0;
-  document.getElementById("hint").textContent = `Hint: ${hint}`;
-  setMessage("");
-  renderCanvas();
-  renderWord();
-  renderKeyboard();
-  renderUsed();
+  const raw = wordInput.value.trim().toLowerCase();
+  if (!raw) { errEl.textContent = 'Please enter a word.'; return; }
+  if (!/^[a-z ]+$/.test(raw)) { errEl.textContent = 'Only letters and spaces, please.'; return; }
+  errEl.textContent = '';
+
+  secretWord = raw;
+  hint       = hintInput.value.trim();
+  wordInput.value = '';
+  hintInput.value = '';
+
+  showScreen('handoff-screen');
 }
 
-document.getElementById("new-game-btn").addEventListener("click", startGame);
+function beginGuessing() {
+  guessed    = new Set();
+  wrongCount = 0;
+  gameOver   = false;
 
-document.addEventListener("keydown", (e) => {
-  const ch = e.key.toLowerCase();
-  if (/^[a-z]$/.test(ch)) guess(ch);
+  document.getElementById('wrong-count').textContent = 0;
+  document.getElementById('hint-display').textContent = hint ? `Hint: ${hint}` : '';
+
+  drawHangman(0);
+  renderWord();
+  buildKeyboard();
+  showScreen('game-screen');
+}
+
+// ── Event listeners ────────────────────────────────────────────────────────
+document.getElementById('start-btn').addEventListener('click', startGame);
+
+document.getElementById('word-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startGame();
 });
 
-startGame();
+document.getElementById('ready-btn').addEventListener('click', beginGuessing);
+
+document.getElementById('play-again-btn').addEventListener('click', () => {
+  showScreen('setup-screen');
+});
+
+document.getElementById('open-history-btn').addEventListener('click', openHistory);
+document.getElementById('result-history-btn').addEventListener('click', openHistory);
+document.getElementById('close-history-btn').addEventListener('click', closeHistory);
+
+document.getElementById('history-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeHistory();
+});
+
+document.addEventListener('keydown', e => {
+  const ch = e.key.toLowerCase();
+  if (/^[a-z]$/.test(ch) && document.getElementById('game-screen').classList.contains('active')) {
+    handleGuess(ch);
+  }
+});

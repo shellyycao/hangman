@@ -7,29 +7,81 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Hangman</h1>
 
-    <div class="game-area">
-      <div class="gallows-section">
-        <canvas id="hangman-canvas" width="200" height="250"></canvas>
-        <p class="wrong-count">Wrong: <span id="wrong-count">0</span> / 6</p>
+  <!-- Screen 1: Player 1 sets the word -->
+  <div id="setup-screen" class="screen active">
+    <h1 class="logo">Hangman</h1>
+    <div class="card">
+      <h2>Player 1 — Set the Word</h2>
+      <p class="sub">Type a word for Player 2 to guess. It stays hidden.</p>
+      <div class="field">
+        <label for="word-input">Secret Word</label>
+        <input type="password" id="word-input" placeholder="Enter a word…" autocomplete="off" spellcheck="false" />
       </div>
+      <div class="field">
+        <label for="hint-input">Hint <span class="optional">(optional)</span></label>
+        <input type="text" id="hint-input" placeholder="Give Player 2 a clue…" autocomplete="off" />
+      </div>
+      <p id="setup-error" class="error-msg"></p>
+      <button id="start-btn" class="btn primary full">Start Game →</button>
+      <button id="open-history-btn" class="btn ghost full">View Word History</button>
+    </div>
+  </div>
 
-      <div class="word-section">
+  <!-- Screen 1b: Handoff (pass device to Player 2) -->
+  <div id="handoff-screen" class="screen">
+    <div class="handoff-card">
+      <div class="handoff-icon">🙈</div>
+      <h2>Word is set!</h2>
+      <p>Pass the device to <strong>Player 2</strong>.<br/>Player 1, look away.</p>
+      <button id="ready-btn" class="btn primary">I'm Ready — Show Game</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Game -->
+  <div id="game-screen" class="screen">
+    <h1 class="logo">Hangman</h1>
+    <div class="game-layout">
+      <div class="gallows-col">
+        <canvas id="hangman-canvas" width="200" height="250"></canvas>
+        <p class="wrong-label">Wrong: <span id="wrong-count">0</span> / 6</p>
+      </div>
+      <div class="guess-col">
+        <p class="player-tag">Player 2's Turn</p>
         <div id="word-display" class="word-display"></div>
-        <p id="hint" class="hint"></p>
-        <p id="message" class="message"></p>
-
-        <div class="keyboard" id="keyboard"></div>
-
-        <button id="new-game-btn" class="new-game-btn">New Game</button>
+        <p id="hint-display" class="hint-text"></p>
+        <div id="keyboard" class="keyboard"></div>
       </div>
     </div>
+  </div>
 
-    <div class="used-letters">
-      <span>Guessed: </span>
-      <span id="used-letters"></span>
+  <!-- Screen 3: Result + Definition -->
+  <div id="result-screen" class="screen">
+    <div class="card result-card">
+      <div id="result-banner" class="result-banner"></div>
+      <p id="result-word" class="revealed-word"></p>
+
+      <div id="definition-box" class="definition-box">
+        <div class="def-spinner">Looking up definition…</div>
+      </div>
+
+      <div class="result-actions">
+        <button id="play-again-btn" class="btn primary">Play Again</button>
+        <button id="result-history-btn" class="btn ghost">View History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="history-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Word History</h2>
+        <button id="close-history-btn" class="close-btn">✕</button>
+      </div>
+      <div id="history-list" class="history-list">
+        <p class="no-history">No games played yet.</p>
+      </div>
     </div>
   </div>
 
