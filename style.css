@@ -1,0 +1,184 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  text-align: center;
+  padding: 2rem;
+  max-width: 700px;
+  width: 100%;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #e94560;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.game-area {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.gallows-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#hangman-canvas {
+  background: #16213e;
+  border-radius: 12px;
+  border: 2px solid #0f3460;
+}
+
+.wrong-count {
+  color: #e94560;
+  font-size: 0.9rem;
+}
+
+.word-section {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.word-display {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 60px;
+  align-items: flex-end;
+}
+
+.letter-box {
+  width: 36px;
+  text-align: center;
+  border-bottom: 3px solid #e94560;
+  font-size: 1.6rem;
+  font-weight: bold;
+  height: 48px;
+  line-height: 48px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.letter-box.space {
+  border-bottom: none;
+  width: 20px;
+}
+
+.hint {
+  color: #a8a8b3;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.message {
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-height: 1.5rem;
+  color: #e94560;
+}
+
+.message.win {
+  color: #4ecca3;
+}
+
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 340px;
+}
+
+.key-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 6px;
+  background: #0f3460;
+  color: #eee;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.key-btn:hover:not(:disabled) {
+  background: #e94560;
+  transform: scale(1.08);
+}
+
+.key-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.key-btn.correct {
+  background: #4ecca3;
+  color: #1a1a2e;
+  opacity: 0.6;
+}
+
+.key-btn.wrong {
+  background: #e94560;
+  opacity: 0.35;
+}
+
+.used-letters {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #a8a8b3;
+  min-height: 1.2rem;
+}
+
+#used-letters {
+  color: #eee;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.new-game-btn {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.8rem;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.new-game-btn:hover {
+  background: #c73652;
+  transform: scale(1.04);
+}
